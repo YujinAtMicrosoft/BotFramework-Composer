@@ -3,7 +3,7 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import formatMessage from 'format-message';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
@@ -163,6 +163,27 @@ const Home: React.FC<RouteComponentProps> = () => {
     //   disabled: botName ? false : true,
     // },
   ];
+
+  const onMessageReceivedFromIframe = React.useCallback((event) => {
+    console.log('onMessageReceivedFromIframe', recievedMessage, event);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('message', onMessageReceivedFromIframe);
+    return () => window.removeEventListener('message', onMessageReceivedFromIframe);
+  }, [onMessageReceivedFromIframe]);
+
+  const [recievedMessage, setReceivedMessage] = useState('');
+
+  useEffect(() => {
+    window.addEventListener('message', function (e) {
+      // if (e.origin !== "https://ocbotcomposer.crm.dynamics.com/main.aspx?appid=fefa3de7-f9ad-eb11-8236-000d3a38271f&forceUCI=1&pagetype=webresource&webresourceName=crd09_botcomposer.html") {
+      //     return
+      // }
+      setReceivedMessage(`Got message from parent: ${e.data}`);
+    });
+  }, [onMessageReceivedFromIframe]);
+
   return (
     <div css={home.outline}>
       <div css={home.page}>
