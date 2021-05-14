@@ -18,9 +18,9 @@ const main = css`
 export const MainContainer = () => {
   return (
     <div css={main}>
-      <Router primary={false}>
+      {/* <Router primary={false}>
         <SideBar path="*" />
-      </Router>
+      </Router> */}
       <RightPanel />
       <Assistant />
       <NotificationContainer />
