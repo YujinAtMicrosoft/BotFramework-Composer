@@ -163,26 +163,37 @@ const Home: React.FC<RouteComponentProps> = () => {
     //   disabled: botName ? false : true,
     // },
   ];
-
-  const onMessageReceivedFromIframe = React.useCallback((event) => {
-    console.log('onMessageReceivedFromIframe', recievedMessage, event);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('message', onMessageReceivedFromIframe);
-    return () => window.removeEventListener('message', onMessageReceivedFromIframe);
-  }, [onMessageReceivedFromIframe]);
-
   const [recievedMessage, setReceivedMessage] = useState('');
 
   useEffect(() => {
+    if (recievedMessage == '') {
+      return;
+    }
+    let { info } = JSON.parse(recievedMessage);
+    fetch('http://localhost:3000/api/publish/88331.35915448848/publish/YujinTestBot', {
+      method: 'POST', // or 'PUT',
+      body: JSON.stringify(info),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((result) => console.log(result));
+  }, [recievedMessage]);
+
+  useEffect(() => {
     window.addEventListener('message', function (e) {
-      // if (e.origin !== "https://ocbotcomposer.crm.dynamics.com/main.aspx?appid=fefa3de7-f9ad-eb11-8236-000d3a38271f&forceUCI=1&pagetype=webresource&webresourceName=crd09_botcomposer.html") {
-      //     return
-      // }
-      setReceivedMessage(`Got message from parent: ${e.data}`);
+      if (
+        JSON.parse(e.data).type != 'iframeComm' ||
+        e.origin !==
+          'https://ocbotcomposer.crm.dynamics.com/main.aspx?appid=fefa3de7-f9ad-eb11-8236-000d3a38271f&forceUCI=1&pagetype=webresource&webresourceName=crd09_botcomposer.html'
+      ) {
+        return;
+      }
+      setReceivedMessage(e.data);
+      console.log(JSON.parse(e.data).info);
     });
-  }, [onMessageReceivedFromIframe]);
+  }, []);
 
   return (
     <div css={home.outline}>

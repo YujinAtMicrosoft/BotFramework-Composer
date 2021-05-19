@@ -232,7 +232,7 @@ export const publisherDispatcher = () => {
         const publishJobIds = publishStorage.get('jobIds') || {};
         publishJobIds[`${projectId}-${target.name}`] = response.data.id;
         publishStorage.set('jobIds', publishJobIds);
-
+        // Do promise after this publishSuccess, remove when cleaning up
         await publishSuccess(callbackHelpers, projectId, response.data, target);
       } catch (err) {
         // special case to handle dotnet issues
