@@ -170,7 +170,7 @@ const Home: React.FC<RouteComponentProps> = () => {
       return;
     }
     let { info } = JSON.parse(recievedMessage);
-    fetch('http://localhost:3000/api/publish/88331.35915448848/publish/YujinTestBot', {
+    fetch('http://localhost:3000/api/publish/82599.04542756568/publish/YujinBot', {
       method: 'POST', // or 'PUT',
       body: JSON.stringify(info),
       headers: {
@@ -178,21 +178,31 @@ const Home: React.FC<RouteComponentProps> = () => {
       },
     })
       .then((response) => response.json())
-      .then((result) => console.log(result));
+      .then((result) => {
+        const { endpointURL, status, port } = result;
+        if (status === 200 && endpointURL) {
+          console.log('Publish success!');
+        }
+      });
   }, [recievedMessage]);
 
+  function handleEvent(e) {
+    if (
+      typeof e.data != 'string' ||
+      !e.data.includes('iframeComm') ||
+      e.origin != 'https://ocbotcomposer.crm.dynamics.com'
+    ) {
+      return;
+    }
+    setReceivedMessage(e.data);
+    console.log(JSON.parse(e.data).info);
+  }
+
   useEffect(() => {
-    window.addEventListener('message', function (e) {
-      if (
-        JSON.parse(e.data).type != 'iframeComm' ||
-        e.origin !==
-          'https://ocbotcomposer.crm.dynamics.com/main.aspx?appid=fefa3de7-f9ad-eb11-8236-000d3a38271f&forceUCI=1&pagetype=webresource&webresourceName=crd09_botcomposer.html'
-      ) {
-        return;
-      }
-      setReceivedMessage(e.data);
-      console.log(JSON.parse(e.data).info);
-    });
+    window.addEventListener('message', handleEvent);
+    return () => {
+      window.removeEventListener('message', handleEvent);
+    };
   }, []);
 
   return (
