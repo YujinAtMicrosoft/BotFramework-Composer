@@ -288,6 +288,7 @@ export default async (composer: IExtensionRegistration): Promise<void> => {
       await this.updateHistory(botId, profileName, publishResultFromStatus(status).result);
       // clean up the background process
       BackgroundProcessManager.removeProcess(jobId);
+      console.log('Completed publish!');
     };
 
     /*******************************************************************************************************************************/

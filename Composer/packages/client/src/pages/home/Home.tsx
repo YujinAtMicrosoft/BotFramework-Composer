@@ -3,7 +3,7 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import formatMessage from 'format-message';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
@@ -163,14 +163,65 @@ const Home: React.FC<RouteComponentProps> = () => {
     //   disabled: botName ? false : true,
     // },
   ];
+
   const [recievedMessage, setReceivedMessage] = useState('');
+  const [jobId, setJobId] = useState('');
+  const [status, setStatus] = useState('');
+  const asyncInterval = async (callback, ms, triesLeft = 5) => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        if (await callback()) {
+          resolve();
+          clearInterval(interval);
+        } else if (triesLeft <= 1) {
+          reject();
+          clearInterval(interval);
+        }
+        triesLeft--;
+      }, ms);
+    });
+  };
+  const wrapper = async () => {
+    try {
+      await asyncInterval(() => fetchPublishStatusData('82599.04542756568', 'YujinBot', jobId), 1000);
+    } catch (e) {
+      console.log('error handling');
+    }
+    console.log('Done!');
+  };
+
+  const fetchPublishStatusData = async (botProjectId, publishTargetName, jobId) => {
+    console.log(publishTargetName);
+    if (!jobId) {
+      return;
+    }
+    await fetch(`http://localhost:3000/api/publish/${botProjectId}/status/${publishTargetName}/${jobId}`, {
+      method: 'GET', // or 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setStatus(result.status);
+        return status == '200';
+      });
+  };
+
+  useEffect(() => {
+    console.log('Should turn on set');
+    wrapper();
+  }, [jobId]);
 
   useEffect(() => {
     if (recievedMessage == '') {
       return;
     }
     let { info } = JSON.parse(recievedMessage);
-    fetch('http://localhost:3000/api/publish/82599.04542756568/publish/YujinBot', {
+    let config = JSON.parse(info.publishTarget.configuration);
+    // find out how to get custom project id
+    fetch(`http://localhost:3000/api/publish/82599.04542756568/publish/${config.name}`, {
       method: 'POST', // or 'PUT',
       body: JSON.stringify(info),
       headers: {
@@ -179,10 +230,8 @@ const Home: React.FC<RouteComponentProps> = () => {
     })
       .then((response) => response.json())
       .then((result) => {
-        const { endpointURL, status, port } = result;
-        if (status === 200 && endpointURL) {
-          console.log('Publish success!');
-        }
+        setJobId(result.id);
+        console.log('Finished publishing', result);
       });
   }, [recievedMessage]);
 

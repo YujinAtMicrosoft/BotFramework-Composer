@@ -317,7 +317,7 @@ export class BotProjectProvision {
               displayName: config.hostname, // todo: this may be wrong!
               endpoint: `https://${
                 provisionResults.webApp?.hostname ?? config.hostname + '.azurewebsites.net'
-              }/api/messages`,
+              }/api/messages`, //Y: here is where the azure bot service has endpoint
               appId: provisionResults.appId,
               webAppHostname: provisionResults.webApp.hostname,
             });

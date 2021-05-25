@@ -234,39 +234,41 @@ export const publisherDispatcher = () => {
         publishStorage.set('jobIds', publishJobIds);
         // Do promise after this publishSuccess, remove when cleaning up
         // let config = JSON.parse(target.configuration)
-        await publishSuccess(callbackHelpers, projectId, response.data, target)
-          .then(() => {
-            return fetch('https://ocbotcomposer.crm.dynamics.com/api/data/v9.2/msdyn_IsBotUserConfigured', {
-              method: 'POST', // or 'PUT',
-              body: JSON.stringify({ BotApplicationId: '6892ca41-7877-42e5-8086-982861c242ad' }),
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-          })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((result) => {
-            if (!result.IsConfigurationValid) {
-              let s = {
-                BotApplicationId: '6892ca41-7877-42e5-8086-982861c242ad',
-                ApplicationId: 'f2f38807-3998-4b61-8f74-78121e1c6d3c',
-                FirstName: 'Yujin',
-                LastName: `Bot_${Math.random()}`,
-              };
-              fetch('https://ocbotcomposer.crm.dynamics.com/api/data/v9.2/msdyn_AddBotUser', {
-                method: 'POST', // or 'PUT',
-                body: JSON.stringify(s),
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              }).then((result) => console.log(result));
-            }
-          });
+        await publishSuccess(callbackHelpers, projectId, response.data, target);
+        // .then(() => {
+        //   return fetch('https://ocbotcomposer.crm.dynamics.com/api/data/v9.2/msdyn_IsBotUserConfigured', {
+        //     method: 'POST', // or 'PUT',
+        //     body: JSON.stringify({'BotApplicationId' :'6892ca41-7877-42e5-8086-982861c242ad'}),
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         "OData-MaxVersion" : "4.0",
+        //         "OData-Version" : "4.0"
+        //     }
+        //   })
+        // })
+        // .then((response) => {
+        //   if (!response.ok) {
+        //     throw new Error(`HTTP error! status: ${response.status}`);
+        //   }
+        //   return response.json()
+        // })
+        // .then((result) => {
+        //   if (!result.IsConfigurationValid) {
+        //     let s = {
+        //       'BotApplicationId' :'6892ca41-7877-42e5-8086-982861c242ad',
+        //       'ApplicationId' : 'f2f38807-3998-4b61-8f74-78121e1c6d3c',
+        //       'FirstName' : 'Yujin',
+        //       'LastName' : `Bot_${Math.random()}`
+        //     }
+        //     fetch('https://ocbotcomposer.crm.dynamics.com/api/data/v9.2/msdyn_AddBotUser', {
+        //       method: 'POST', // or 'PUT',
+        //       body: JSON.stringify(s),
+        //       headers: {
+        //           'Content-Type': 'application/json',
+        //       }
+        //     }).then((result) => (console.log(result)))
+        //   }
+        // });
       } catch (err) {
         // special case to handle dotnet issues
         await publishFailure(callbackHelpers, Text.CONNECTBOTFAILURE, err.response?.data, target, projectId);
