@@ -44,6 +44,7 @@ export const App: React.FC = () => {
     <Fragment key={appLocale}>
       <Logger />
       <Announcement />
+      {/* comment this out */}
       <Header />
       <MainContainer />
     </Fragment>

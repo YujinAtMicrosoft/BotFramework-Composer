@@ -883,6 +883,7 @@ export const postRootBotCreation = async (
   projectIdCache.set(projectId);
 
   // navigate to the new get started section
+  // comment this out to stop navigation after creating bot
   navigateToBot(callbackHelpers, projectId, undefined, btoa('dialogs#getstarted'));
 };
 

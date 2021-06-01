@@ -18,6 +18,7 @@ const main = css`
 export const MainContainer = () => {
   return (
     <div css={main}>
+      // comment out router
       <Router primary={false}>
         <SideBar path="*" />
       </Router>

@@ -3,7 +3,7 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import formatMessage from 'format-message';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
@@ -15,13 +15,24 @@ import { useRecoilValue } from 'recoil';
 import { Toolbar, IToolbarItem } from '@bfc/ui-shared';
 
 import { CreationFlowStatus } from '../../constants';
-import { dispatcherState } from '../../recoilModel';
+
 import {
   recentProjectsState,
+  currentProjectIdState,
   feedState,
   warnAboutDotNetState,
   warnAboutFunctionsState,
 } from '../../recoilModel/atoms/appState';
+import {
+  botDisplayNameState,
+  botProjectIdsState,
+  dispatcherState,
+  localBotsSettingDataSelector,
+  userSettingsState,
+} from '../../recoilModel';
+import { fetchProjectDataByPath } from '../../../src/recoilModel/dispatchers/utils/project';
+import { localBotsDataSelector } from '../../recoilModel/selectors/project';
+
 import TelemetryClient from '../../telemetry/TelemetryClient';
 import composerDocumentIcon from '../../images/composerDocumentIcon.svg';
 import stackoverflowIcon from '../../images/stackoverflowIcon.svg';
@@ -84,9 +95,14 @@ const Home: React.FC<RouteComponentProps> = () => {
     setCreationFlowType,
     setWarnAboutDotNet,
     setWarnAboutFunctions,
+    createNewBotV2,
   } = useRecoilValue(dispatcherState);
   const warnAboutDotNet = useRecoilValue(warnAboutDotNetState);
   const warnAboutFunctions = useRecoilValue(warnAboutFunctionsState);
+  const botProjectData = useRecoilValue(localBotsDataSelector);
+  const botProjects = useRecoilValue(botProjectIdsState);
+  const localBots = useRecoilValue(localBotsSettingDataSelector);
+  const { appLocale } = useRecoilValue(userSettingsState);
 
   const onItemChosen = async (item) => {
     if (item?.path) {
@@ -163,46 +179,156 @@ const Home: React.FC<RouteComponentProps> = () => {
     //   disabled: botName ? false : true,
     // },
   ];
-  const [recievedMessage, setReceivedMessage] = useState('');
 
-  useEffect(() => {
-    if (recievedMessage == '') {
+  const [recievedMessage, setReceivedMessage] = useState('');
+  const [jobId, setJobId] = useState('');
+  const [status, setStatus] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [projectName, setProjectName] = useState('');
+
+  const asyncInterval = async (callback, ms, triesLeft = 5) => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        if (await callback()) {
+          // clearInterval(interval);
+          resolve(interval);
+        } else if (triesLeft <= 1) {
+          clearInterval(interval);
+          reject();
+        }
+        triesLeft--;
+      }, ms);
+    });
+  };
+  const wrapper = async () => {
+    try {
+      await asyncInterval(fetchPublishStatusData, 10000, 10).then((interval) => clearInterval(interval));
+    } catch (e) {
+      console.log('error handling');
+    }
+    console.log('Done!');
+  };
+
+  const fetchPublishStatusData = async () => {
+    if (!jobId) {
       return;
     }
-    let { info } = JSON.parse(recievedMessage);
-    fetch('http://localhost:3000/api/publish/88331.35915448848/publish/YujinTestBot', {
-      method: 'POST', // or 'PUT',
-      body: JSON.stringify(info),
+
+    await fetch(`/api/publish/${projectId}/status/${projectName}/${jobId}`, {
+      method: 'GET', // or 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
     })
       .then((response) => response.json())
-      .then((result) => console.log(result));
-  }, [recievedMessage]);
+      .then((result) => {
+        console.log(result);
+        // setStatus(result.status)
+        return result.status == 200;
+      });
+  };
 
   useEffect(() => {
-    window.addEventListener('message', function (e) {
-      if (
-        JSON.parse(e.data).type != 'iframeComm' ||
-        e.origin !==
-          'https://ocbotcomposer.crm.dynamics.com/main.aspx?appid=fefa3de7-f9ad-eb11-8236-000d3a38271f&forceUCI=1&pagetype=webresource&webresourceName=crd09_botcomposer.html'
-      ) {
-        return;
+    if (jobId == '') {
+      return;
+    }
+    async function publishStatus() {
+      console.log('Should turn on set');
+
+      await wrapper(); //uncomment thsi once arm token solved
+      //put this for now since the publish is weird
+      let { info } = JSON.parse(recievedMessage);
+      let config = JSON.parse(info.publishTarget.configuration);
+
+      let getDynamically = {
+        BotApplicationId: config.settings.MicrosoftAppId, //'5bd03942-8bac-4a05-9cd3-3e5de6071140',
+        ApplicationId: 'f2f38807-3998-4b61-8f74-78121e1c6d3c', //created on msdynomichnannel
+        FirstName: 'Yujin',
+        LastName: `Bot_${Math.random()}`,
+      };
+      parent.postMessage(JSON.stringify(getDynamically), '*');
+    }
+    publishStatus();
+  }, [jobId]);
+
+  useEffect(() => {
+    if (recievedMessage == '') {
+      return;
+    }
+
+    async function fetchData() {
+      try {
+        let { info } = JSON.parse(recievedMessage);
+        let config = JSON.parse(info.publishTarget.configuration);
+        const newBotData = {
+          templateId: '@microsoft/generator-bot-empty',
+          templateVersion: '1.0.0',
+          name: config.name,
+          description: '',
+          location: 'C:/Users/t-yujincho/Composer',
+          schemaUrl: '',
+          storageId: 'default',
+          runtimeType: 'webapp',
+          runtimeLanguage: 'dotnet',
+        };
+
+        // await createNewBotV2(newBotData)
+        let foundProject = recentProjects.find(({ name }) => name == config.name);
+        console.log(foundProject);
+        if (foundProject == undefined) {
+          console.log('Problem with recent projects');
+          return;
+        }
+        const { projectData } = await fetchProjectDataByPath(foundProject.path, foundProject.storageId, false);
+        const projectId = projectData.id;
+        setProjectName(config.name);
+        setProjectId(projectId);
+        await fetch(`/api/publish/${projectId}/publish/${config.name}`, {
+          method: 'POST', // or 'PUT',
+          body: JSON.stringify(info),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            setJobId(result.id);
+            console.log('Finished publishing', result);
+          });
+      } catch (e) {
+        console.error(e);
       }
-      setReceivedMessage(e.data);
-      console.log(JSON.parse(e.data).info);
-    });
+    }
+    fetchData();
+  }, [recievedMessage]);
+
+  function handleEvent(e) {
+    if (
+      typeof e.data != 'string' ||
+      !e.data.includes('iframeComm') ||
+      e.origin != 'https://ocbotcomposer.crm.dynamics.com'
+    ) {
+      return;
+    }
+    setReceivedMessage(e.data);
+    console.log(JSON.parse(e.data).info);
+  }
+
+  useEffect(() => {
+    window.addEventListener('message', handleEvent);
+    return () => {
+      window.removeEventListener('message', handleEvent);
+    };
   }, []);
 
   return (
     <div css={home.outline}>
       <div css={home.page}>
-        <h1 css={home.title}>{formatMessage(`Welcome to Bot Framework Composer`)}</h1>
+        {/* <h1 css={home.title}>{formatMessage(`Welcome to Bot Framework Composer`)}</h1> */}
         <div css={home.leftPage} role="main">
           <div css={home.recentBotsContainer}>
             <h2 css={home.subtitle}>{formatMessage(`Recent`)}</h2>
-            <Toolbar css={home.toolbar} toolbarItems={toolbarItems} />
+            {/* <Toolbar css={home.toolbar} toolbarItems={toolbarItems} /> */}
             {recentProjects.length > 0 ? (
               <RecentBotList
                 recentProjects={recentProjects}
@@ -240,7 +366,7 @@ const Home: React.FC<RouteComponentProps> = () => {
               </div>
             )}
           </div>
-          <div css={home.resourcesContainer}>
+          {/* <div css={home.resourcesContainer}>
             <h2 css={home.subtitle}>{formatMessage('Resources')}&nbsp;</h2>
             <div css={home.rowContainer}>
               {resources.map((item, index) => (
@@ -286,11 +412,11 @@ const Home: React.FC<RouteComponentProps> = () => {
                 ))}
               </Pivot>
             </div>
-          </div>
+          </div> */}
         </div>
-        <div css={home.rightPage}>
+        {/* <div css={home.rightPage}>
           <WhatsNewsList newsList={feed.whatsNewLinks} />
-        </div>
+        </div> */}
       </div>
       {warnAboutDotNet && (
         <InstallDepModal
