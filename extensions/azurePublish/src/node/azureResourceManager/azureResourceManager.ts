@@ -28,6 +28,7 @@ import {
   DeploymentsConfig,
   QnAResourceConfig,
   AzureFunctionsConfig,
+  CognitiveServiceConfig,
 } from './azureResourceManagerConfig';
 
 export class AzureResourceMananger {
@@ -206,6 +207,57 @@ export class AzureResourceMananger {
         config.name,
         {
           kind: 'LUIS',
+          sku: {
+            name: config.sku ?? 'S0',
+          },
+          location: authoringLocation,
+        }
+      );
+      if (deployResult._response.status >= 300) {
+        this.logger({
+          status: BotProjectDeployLoggerType.PROVISION_ERROR,
+          message: deployResult._response.bodyAsText,
+        });
+        throw createCustomizeError(ProvisionErrors.CREATE_LUIS_ERROR, deployResult._response.bodyAsText);
+      }
+
+      const endpoint = deployResult.properties?.endpoint ?? '';
+      const keys = await cognitiveServicesManagementClient.accounts.listKeys(config.resourceGroupName, config.name);
+      const endpointKey = keys?.key1 ?? '';
+      const location = deployResult.location;
+      return { endpoint, endpointKey, location };
+    } catch (err) {
+      this.logger({
+        status: BotProjectDeployLoggerType.PROVISION_ERROR,
+        message: JSON.stringify(err, Object.getOwnPropertyNames(err)),
+      });
+      throw createCustomizeError(ProvisionErrors.CREATE_LUIS_ERROR, stringifyError(err));
+    }
+  }
+
+  /**
+   * Deploy luis resource
+   * @param config
+   */
+  public async deployCognitiveServiceResource(
+    config: CognitiveServiceConfig
+  ): Promise<{ endpoint: string; endpointKey: string; location: string }> {
+    try {
+      this.logger({
+        status: BotProjectDeployLoggerType.PROVISION_INFO,
+        message: 'Deploying CogService Resource ...',
+      });
+      const cognitiveServicesManagementClient = new CognitiveServicesManagementClient(this.creds, this.subscriptionId);
+      // check luis publish location is validated
+      let authoringLocation = config.location;
+      if (!LuisAuthoringSupportLocation.includes(config.location)) {
+        authoringLocation = 'westus'; // default as westus
+      }
+      const deployResult = await cognitiveServicesManagementClient.accounts.create(
+        config.resourceGroupName,
+        config.name,
+        {
+          kind: 'SpeechServices',
           sku: {
             name: config.sku ?? 'S0',
           },

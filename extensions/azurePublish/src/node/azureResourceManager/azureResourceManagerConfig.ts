@@ -59,6 +59,13 @@ export interface LuisResourceConfig {
   sku?: string;
 }
 
+export interface CognitiveServiceConfig {
+  resourceGroupName: string;
+  name: string;
+  location: string;
+  sku?: string;
+}
+
 export interface ApplicationInsightsConfig {
   resourceGroupName: string;
   name: string;
