@@ -328,7 +328,8 @@ const Home: React.FC<RouteComponentProps> = () => {
         <div css={home.leftPage} role="main">
           <div css={home.recentBotsContainer}>
             <h2 css={home.subtitle}>{formatMessage(`Recent`)}</h2>
-            {/* <Toolbar css={home.toolbar} toolbarItems={toolbarItems} /> */}
+            {/* Comment toolbar out */}
+            <Toolbar css={home.toolbar} toolbarItems={toolbarItems} />
             {recentProjects.length > 0 ? (
               <RecentBotList
                 recentProjects={recentProjects}
