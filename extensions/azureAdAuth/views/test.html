@@ -1,0 +1,37 @@
+<html>
+    <head></head>
+    <body>
+        LOGIN REQUIRED! <button id="button">Azure Login here</button>
+        <script>
+            document.getElementById("button").onclick = function () {
+                // window.open('/auth/openid', 'test')
+                newwindow=window.open('/auth/openid','name','height=200,width=150');
+                if (window.focus) {newwindow.focus()}
+            }
+            window.addEventListener('message', event => receiveMessage(event), false);
+            function receiveMessage(event) {
+
+                if (event.data == "test") {
+                    console.log("Log in complete!")
+                console.log(event)
+                    window.location.href = 'http://localhost:3000/home'
+
+                }
+
+                // console.log(window.parent)
+                // window.opener.postMessage('replace your location', '*');
+
+
+                //test
+                // document.location.href = 'https://5075f433b83e.ngrok.io/home'
+
+
+                // window.top.document.getElementById('inlineFrameExample').contentWindow.location.replace("/test")
+                //this relocates whole page
+                // window.top.location.replace('/my-private-route');
+                // parent.document.getElementById('inlineFrameExample').src = "https://google.com"
+
+            }
+         </script>
+    </body>
+</html>
