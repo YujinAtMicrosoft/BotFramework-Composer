@@ -21,9 +21,8 @@ exports.creds = {
 
   // Required
   responseMode: 'form_post',
-
   // Required, the reply URL registered in AAD for your app
-  redirectUrl: 'http://localhost:3000/auth/openid/return',
+  redirectUrl: 'https://6fde8deb0948.ngrok.io/auth/openid/return',
 
   // Required if we use http for redirectUrl
   allowHttpForRedirectUrl: true,
