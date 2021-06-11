@@ -54,7 +54,8 @@ export async function start(electronContext?: ElectronContext): Promise<number |
 
   app.use(bodyParser.json({ limit: '50mb' }) as any);
   app.use(bodyParser.urlencoded({ extended: false }) as any);
-  app.use(session({ secret: 'bot-framework-composer' }));
+  app.set('trust proxy', 1);
+  app.use(session({ secret: 'bot-framework-composer', cookie: { secure: true, sameSite: 'none' } }));
   app.use(ExtensionContext.passport.initialize());
   app.use(ExtensionContext.passport.session());
 

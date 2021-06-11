@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-var OIDCStrategy = require('passport-azure-ad').BearerStrategy;
+var OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 var config = require('./config');
 var cookieParser = require('cookie-parser');
 
@@ -30,6 +30,7 @@ module.exports = {
       useCookieInsteadOfSession: config.creds.useCookieInsteadOfSession,
       cookieEncryptionKeys: config.creds.cookieEncryptionKeys,
       clockSkew: config.creds.clockSkew,
+      cookieSameSite: true,
     };
 
     composer.usePassportStrategy(
