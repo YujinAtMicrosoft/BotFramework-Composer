@@ -15,6 +15,7 @@ import {
   useTelemetryClient,
   TelemetryClient,
   useApplicationApi,
+  useSendExtraData,
 } from '@bfc/extension-client';
 import { Subscription } from '@azure/arm-subscriptions/esm/models';
 import { DeployLocation, AzureTenant, Notification } from '@botframework-composer/types';
@@ -426,6 +427,8 @@ export const AzureProvisionDialog: React.FC = () => {
 
   useEffect(() => {
     isMounted.current = true;
+    console.log(useSendExtraData());
+    startProvision(useSendExtraData());
     return () => {
       isMounted.current = false;
     };

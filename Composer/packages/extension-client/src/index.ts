@@ -10,6 +10,6 @@ export * from './EditorExtensionContext';
 export * from './hooks';
 export * from './types';
 export * from './utils';
+export * from './page';
 export { extensionEventEmitter } from './extensionEventEmitter';
-
 export { syncStore } from './store';

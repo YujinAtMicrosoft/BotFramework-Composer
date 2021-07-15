@@ -54,6 +54,7 @@ window.Composer = {
   __extensionId: '',
   __bundleId: '',
   __pluginType: '',
+  publishInfo: {},
   render: (component: React.ReactElement) => {
     ReactDOM.render(component, document.getElementById('root'));
     window.parent?.postMessage('plugin-rendered', '*');

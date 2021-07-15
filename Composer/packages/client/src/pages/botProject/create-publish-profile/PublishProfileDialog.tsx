@@ -3,7 +3,9 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import { Fragment, useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useCallback } from 'react';
+import React, { useEffect } from 'react';
+
 import { PublishTarget } from '@bfc/shared';
 import formatMessage from 'format-message';
 import { Dialog } from 'office-ui-fabric-react/lib/Dialog';

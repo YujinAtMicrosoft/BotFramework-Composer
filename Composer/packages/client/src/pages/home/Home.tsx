@@ -3,7 +3,7 @@
 
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import formatMessage from 'format-message';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Image, ImageFit } from 'office-ui-fabric-react/lib/Image';
@@ -13,6 +13,7 @@ import { RouteComponentProps } from '@reach/router';
 import { navigate } from '@reach/router';
 import { useRecoilValue } from 'recoil';
 import { Toolbar, IToolbarItem } from '@bfc/ui-shared';
+import Path from 'path';
 
 import { CreationFlowStatus } from '../../constants';
 import { dispatcherState } from '../../recoilModel';
@@ -77,6 +78,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   // const templateId = useRecoilValue<string>(templateIdState);
 
   const recentProjects = useRecoilValue(recentProjectsState);
+  //fetch recent projects
   const feed = useRecoilValue(feedState);
   const {
     openProject,
@@ -84,6 +86,7 @@ const Home: React.FC<RouteComponentProps> = () => {
     setCreationFlowType,
     setWarnAboutDotNet,
     setWarnAboutFunctions,
+    createNewBotV2,
   } = useRecoilValue(dispatcherState);
   const warnAboutDotNet = useRecoilValue(warnAboutDotNetState);
   const warnAboutFunctions = useRecoilValue(warnAboutFunctionsState);
@@ -163,13 +166,177 @@ const Home: React.FC<RouteComponentProps> = () => {
     //   disabled: botName ? false : true,
     // },
   ];
+
+  // useEffect(() => {
+  //   const newBotData = {
+  //     templateId: '@microsoft/generator-bot-empty',
+  //     templateVersion: '1.0.0',
+  //     name: "testName",
+  //     description: '',
+  //     location: 'C:/Users/t-yujincho/Composer',
+  //     schemaUrl: '',
+  //     storageId: 'default',
+  //     runtimeType: 'webapp',
+  //     runtimeLanguage: 'dotnet',
+  //   };
+  //   createNewBotV2(newBotData)
+  // }, []);
+  // const [recievedMessage, setReceivedMessage] = useState('');
+  // const [jobId, setJobId] = useState('');
+  // const [status, setStatus] = useState('');
+  // const [projectId, setProjectId] = useState('');
+  // const [projectName, setProjectName] = useState('');
+  // const storages = useRecoilValue(storagesState);
+  // const currentStorageIndex = useRef(0);
+  // const storage = storages[currentStorageIndex.current];
+  // const currentStorageId = storage ? storage.id : 'default';
+
+  // const asyncInterval = async (callback, ms, triesLeft = 5) => {
+  //   return new Promise((resolve, reject) => {
+  //     const interval = setInterval(async () => {
+  //       if (await callback()) {
+  //         // clearInterval(interval);
+  //         resolve(interval);
+  //       } else if (triesLeft <= 1) {
+  //         clearInterval(interval);
+  //         reject();
+  //       }
+  //       triesLeft--;
+  //     }, ms);
+  //   });
+  // };
+  // const wrapper = async () => {
+  //   try {
+  //     await asyncInterval(fetchPublishStatusData, 10000, 10).then((interval) => clearInterval(interval));
+  //   } catch (e) {
+  //     console.log('error handling');
+  //   }
+  //   console.log('Done!');
+  // };
+
+  // const fetchPublishStatusData = async () => {
+  //   if (!jobId) {
+  //     return;
+  //   }
+  //   http://localhost:3000/api/publish/74391.35582239207/status/Othertest/ca123a2f-ad06-4a48-a7bf-a340e93cffad
+  //   await fetch(`/api/publish/${projectId}/status/${projectName}/${jobId}`, {
+  //     method: 'GET', // or 'PUT',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((result) => {
+  //       console.log(result);
+  //       // setStatus(result.status)
+  //       return result.status == 200;
+  //     });
+  // };
+
+  // useEffect(() => {
+  //   if (jobId == '') {
+  //     return;
+  //   }
+  //   async function publishStatus() {
+  //     console.log('Should turn on set');
+
+  //     await wrapper(); //uncomment thsi once arm token solved
+  //     //put this for now since the publish is weird
+  //     let { info } = JSON.parse(recievedMessage);
+  //     let config = JSON.parse(info.publishTarget.configuration);
+
+  //     let getDynamically = {
+  //       BotApplicationId: config.settings.MicrosoftAppId, //'5bd03942-8bac-4a05-9cd3-3e5de6071140',
+  //       ApplicationId: 'f2f38807-3998-4b61-8f74-78121e1c6d3c', //created on msdynomichnannel
+  //       FirstName: 'Yujin',
+  //       LastName: `Bot_${Math.random()}`,
+  //     };
+  //     parent.postMessage(JSON.stringify(getDynamically), '*');
+  //   }
+  //   publishStatus();
+  // }, [jobId]);
+
+  // useEffect(() => {
+  //   if (recievedMessage == '') {
+  //     return;
+  //   }
+
+  //   async function fetchData() {
+  //     try {
+  //       let { info } = JSON.parse(recievedMessage);
+  //       let config = JSON.parse(info.publishTarget.configuration);
+  //       const newBotData = {
+  //         templateId: '@microsoft/generator-bot-empty',
+  //         templateVersion: '1.0.0',
+  //         name: config.name,
+  //         description: '',
+  //         location: 'C:/Users/t-yujincho/Composer',
+  //         schemaUrl: '',
+  //         storageId: 'default',
+  //         runtimeType: 'webapp',
+  //         runtimeLanguage: 'dotnet',
+  //       };
+
+  //       await createNewBotV2(newBotData)
+  //       .then(()=>{
+  //         window.location.reload()
+  //         // fetchRecentProjects()
+  //       })
+  //       // let foundProject = recentProjects.find(({ name }) => name == config.name);
+  //       // console.log(foundProject);
+  //       // if (foundProject == undefined) {
+  //       //   console.log('Problem with recent projects');
+  //       //   return;
+  //       // }
+  //       // const { projectData } = await fetchProjectDataByPath(foundProject.path, foundProject.storageId, false);
+  //       // const projectId = projectData.id;
+  //       // setProjectName(config.name);
+  //       // setProjectId(projectId);
+  //       // await fetch(`/api/publish/${projectId}/publish/${config.name}`, {
+  //       //   method: 'POST', // or 'PUT',
+  //       //   body: JSON.stringify(info),
+  //       //   headers: {
+  //       //     'Content-Type': 'application/json',
+  //       //   },
+  //       // })
+  //       //   .then((response) => response.json())
+  //       //   .then((result) => {
+  //       //     setJobId(result.id);
+  //       //     console.log('Finished publishing', result);
+  //       //   });
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   }
+  //   fetchData();
+  // }, [recievedMessage]);
+
+  // function handleEvent(e) {
+  //   if (
+  //     typeof e.data != 'string' ||
+  //     !e.data.includes('iframeComm') ||
+  //     e.origin != 'https://ocbotcomposer.crm.dynamics.com'
+  //   ) {
+  //     return;
+  //   }
+  //   setReceivedMessage(e.data);
+  //   console.log(JSON.parse(e.data).info);
+  // }
+
+  // useEffect(() => {
+  //   window.addEventListener('message', handleEvent);
+  //   return () => {
+  //     window.removeEventListener('message', handleEvent);
+  //   };
+  // }, []);
+
   return (
     <div css={home.outline}>
       <div css={home.page}>
         <h1 css={home.title}>{formatMessage(`Welcome to Bot Framework Composer`)}</h1>
         <div css={home.leftPage} role="main">
           <div css={home.recentBotsContainer}>
-            <h2 css={home.subtitle}>{formatMessage(`Recent`)}</h2>
+            {/* <h2 css={home.subtitle}>{formatMessage(`Recent`)}</h2> */}
             <Toolbar css={home.toolbar} toolbarItems={toolbarItems} />
             {recentProjects.length > 0 ? (
               <RecentBotList

@@ -29,6 +29,7 @@ declare global {
       render: (component: React.ReactElement) => void;
       sync: (shell: Shell) => void;
       settings: ExtensionSettings;
+      publishInfo: object;
       [key: string]: any;
     };
 

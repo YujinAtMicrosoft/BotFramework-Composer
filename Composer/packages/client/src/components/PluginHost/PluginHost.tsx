@@ -49,7 +49,8 @@ async function attachPluginAPI(
   bundleId: string,
   type: PluginType,
   shell?: object,
-  settings?: ExtensionSettings
+  settings?: ExtensionSettings,
+  publishInfo?: object
 ) {
   const api = { ...PluginAPI[type], ...PluginAPI.auth };
 
@@ -61,6 +62,7 @@ async function attachPluginAPI(
   win.Composer.__bundleId = bundleId;
   win.Composer.__pluginType = type;
   win.Composer.settings = settings ?? {};
+  win.Composer.publishInfo = publishInfo ?? {};
   win.Composer.sync(shell);
 }
 
@@ -96,11 +98,11 @@ export const PluginHost: React.FC<PluginHostProps> = (props) => {
     };
   }, []);
 
-  const loadBundle = async (name: string, bundle: string, type: PluginType) => {
+  const loadBundle = async (name: string, bundle: string, type: PluginType, publishInfo) => {
     const iframeWindow = targetRef.current?.contentWindow as Window;
     const iframeDocument = targetRef.current?.contentDocument as Document;
 
-    await attachPluginAPI(iframeWindow, name, bundle, type, shell, extensionSettings);
+    await attachPluginAPI(iframeWindow, name, bundle, type, shell, extensionSettings, publishInfo);
 
     //load the bundle for the specified plugin
     const pluginScriptId = `plugin-${type}-${name}`;
@@ -108,14 +110,26 @@ export const PluginHost: React.FC<PluginHostProps> = (props) => {
     // If plugin bundles end up being too large and block the client thread due to the load, enable the async flag on this call
     injectScript(iframeDocument, pluginScriptId, bundleUri, false);
   };
+  let preloaded = false;
+  let publishInfoSent = false;
+  let publishInfo;
 
   useEffect(() => {
     // renders the plugin's UI inside of the iframe
     if (pluginName && pluginType && targetRef.current) {
       setIsLoading(true);
       const onPreloaded = (ev) => {
+        console.log('preloading!!!');
+        console.log(ev);
+
         if (ev.data === 'host-preload-complete') {
-          loadBundle(pluginName, bundleId, pluginType);
+          preloaded = true;
+        } else if (ev.data.type == 'provisionInfo') {
+          publishInfoSent = true;
+          publishInfo = ev.data.publishInfo;
+        }
+        if (preloaded && publishInfoSent) {
+          loadBundle(pluginName, bundleId, pluginType, publishInfo);
         }
       };
 
