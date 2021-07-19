@@ -428,7 +428,8 @@ export const AzureProvisionDialog: React.FC = () => {
   useEffect(() => {
     isMounted.current = true;
     console.log(useSendExtraData());
-    startProvision(useSendExtraData());
+    // startProvision(useSendExtraData());
+    onSubmit(useSendExtraData());
     return () => {
       isMounted.current = false;
     };
@@ -1342,7 +1343,8 @@ export const AzureProvisionDialog: React.FC = () => {
         }}
       >
         <div style={{ flex: 1 }}>
-          {page === PageTypes.ChooseAction && PageChooseAction}
+          <LoadingSpinner />
+          {/* {page === PageTypes.ChooseAction && PageChooseAction}
           {page === PageTypes.ConfigProvision && PageFormConfig}
           {page === PageTypes.AddResources && PageAddResources()}
           {page === PageTypes.ReviewResource && PageReview}
@@ -1360,7 +1362,7 @@ export const AzureProvisionDialog: React.FC = () => {
                 setEditorError(true);
               }}
             />
-          )}
+          )} */}
         </div>
         <div
           style={{
@@ -1374,7 +1376,7 @@ export const AzureProvisionDialog: React.FC = () => {
             padding: '24px 0px 0px',
           }}
         >
-          {PageFooter}
+          {/* {PageFooter} */}
         </div>
       </div>
     </Fragment>
